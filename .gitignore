@@ -75,4 +75,8 @@ docs/_build/
 testing/
 
 # converting results
+<<<<<<< HEAD
 *.b64.txt
+=======
+*.b64.txt
+>>>>>>> f56ec66 (🖋 cosmetic changes)
