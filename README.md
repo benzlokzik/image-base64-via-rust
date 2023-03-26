@@ -8,7 +8,7 @@
 
 ---
 
-This is study project, created to try work with  ![`maturin`](https://github.com/PyO3/maturin)
+This is study project, created to try work with  [`maturin`](https://github.com/PyO3/maturin)
 
 ---
 
