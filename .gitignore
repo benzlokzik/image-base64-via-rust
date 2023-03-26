@@ -73,3 +73,6 @@ docs/_build/
 
 # testing directories
 testing/
+
+# converting results
+*.b64.txt
