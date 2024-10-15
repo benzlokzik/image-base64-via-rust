@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   linux:
@@ -101,18 +101,18 @@ jobs:
           path: dist
 
   release:
-    name: Release
+    name: Draft GitHub Release
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     needs: [linux, windows, macos, sdist]
     steps:
       - uses: actions/download-artifact@v4.1.7
         with:
           name: wheels
-      - name: Publish to PyPI
-        uses: PyO3/maturin-action@v1
-        env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v1
         with:
-          command: upload
-          args: --skip-existing *
+          draft: true
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
