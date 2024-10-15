@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   linux:
@@ -37,7 +37,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels-linux-${{ matrix.target }}
           path: dist
 
   windows:
@@ -60,7 +60,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels-windows-${{ matrix.target }}
           path: dist
 
   macos:
@@ -82,7 +82,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels-macos-${{ matrix.target }}
           path: dist
 
   sdist:
@@ -97,22 +97,44 @@ jobs:
       - name: Upload sdist
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: sdist
           path: dist
 
   release:
-    name: Release
+    name: Draft GitHub Release
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     needs: [linux, windows, macos, sdist]
     steps:
-      - uses: actions/download-artifact@v4.1.7
+      - name: Download Linux wheels
+        uses: actions/download-artifact@v3
         with:
-          name: wheels
-      - name: Publish to PyPI
-        uses: PyO3/maturin-action@v1
+          name: wheels-linux-x86_64
+          path: ./dist-linux-x86_64
+      - name: Download Windows wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels-windows-x64
+          path: ./dist-windows-x64
+      - name: Download MacOS wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels-macos-x86_64
+          path: ./dist-macos-x86_64
+      - name: Download sdist
+        uses: actions/download-artifact@v3
+        with:
+          name: sdist
+          path: ./dist-sdist
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            ./dist-linux-x86_64/*
+            ./dist-windows-x64/*
+            ./dist-macos-x86_64/*
+            ./dist-sdist/*
         env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        with:
-          command: upload
-          args: --skip-existing *
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
